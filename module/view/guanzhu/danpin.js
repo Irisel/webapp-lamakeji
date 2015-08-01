@@ -4,14 +4,13 @@ define('', '', function(require) {
 	var H = require('text!../../../tpl/guanzhu/danpin.html');
 	var list_tpl = require('text!../../../tpl/guanzhu/view/list.html');
 	var model = new M({
-		action: 'product/productListMyGoodByUid',
-		type: "post"
+		action: 'product/getMyFavoriteList'
 	});
 	var V = B.View.extend({
 		model: model,
 		template: H,
 		events: {
-			"click .js-share": "doShare",
+			"click .js-share": "doShare"
 		},
 		initialize: function() {
 			var t = this;
@@ -66,7 +65,7 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"user_id": Jser.getItem("user_id")
+
 			}
 		});
 		return new V({

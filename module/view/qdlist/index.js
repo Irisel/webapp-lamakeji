@@ -4,7 +4,7 @@ define('', '', function(require) {
 	var H = require('text!../../../tpl/qdlist/index.html');
 
 	var model = new M({
-		action: 'favorite/favoriteMyList'
+		action: 'gogroup/getList'
 	});
 	var V = B.View.extend({
 		model: model,
@@ -24,6 +24,7 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
+            console.log(data);
 			var html = _.template(t.template, data);
 			t.$el.show().html(html);
 		},
@@ -54,11 +55,10 @@ define('', '', function(require) {
 			// user_id该收藏夹的用户编号
 			var $elem = t.$el.find(".qd-icon-on");
 			var _data = {
-				"fid": $elem.attr("data-fid"),
-				"pid": t.model.get("pars")["pid"],
-				"user_id": Jser.getItem("user_id")
-			}
-			Jser.getJSON(ST.PATH.ACTION + "favorite/favoriteAddProduct", _data, function(data) {
+				"goid": $elem.attr("data-fid"),
+				"productid": t.model.get("pars")["id"]
+			};
+			Jser.getJSON(ST.PATH.ACTION + "gogroup/addProduct?timestamp=1437323557043&version=1.0&client=H5", _data, function(data) {
 				$elem.parent().parent().find(".js-pnum").text(Number($elem.attr("data-pnum")) + 1);
 				Jser.alert("保存成功", function() {
 					t.goback();
@@ -75,8 +75,7 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"user_id": Jser.getItem("user_id"),
-				"pid": pars.pid
+                'id': pars.pid
 			}
 		});
 		return new V({

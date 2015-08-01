@@ -8,7 +8,7 @@ define('', '', function(require) {
 
 	var model = new M({
 		pars: {
-			"user_id": Jser.getItem("user_id")
+
 		}
 	});
 	var V = B.View.extend({
@@ -50,7 +50,7 @@ define('', '', function(require) {
 	});
 	return function(pars) {
 		model.set({
-			action: 'favorite/favoriteMyList'
+			action: 'favorite/getMyFavoriteList'
 		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)

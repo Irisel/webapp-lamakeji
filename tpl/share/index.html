@@ -1,0 +1,90 @@
+<div class="goshare-wrapper">
+    <div class="goshare-bg">
+        <img src="<%=data.picture%>">
+    </div>
+    <div class="goshare-body">
+        <div class="goshare-content">
+            <div class="user-title">
+                <div class="user-icon"></div><!--span><%=data.nickname%></span-->
+            </div>
+            <div class="goshare-user">
+                <div class="level1">
+                    <div class="level2"></div>
+                    <div class="user-head">
+                        <div><img src="<%=data.photo%>"></div>
+                    </div>
+                </div>
+                <div class="bar">
+                    <div class="base"><div class="progress"><div class="percentage"><%=data.rate%>%</div></div></div>
+                </div>
+            </div>
+            <div class="goshare-block">
+            </div>
+        </div>
+        <div class="goshare-letters">
+            <span><i class="icon-horn"></i><%=data.letters%></span>
+        </div>
+        <div class="goshare-products">
+            <div class="products">
+                <%_.each(data.product,function(item){%>
+                <div class="product-share">
+                   <div class="product-img js-jd" data-status="<%=item.status%>" data-href="<%=item.url%>">
+                        <img src="<%=item.picture%>">
+                    </div>
+                    <section class="product-desc">
+                        <div class="product-info js-jd" data-status="<%=item.status%>" data-href="<%=item.url%>">
+                            <span class="product-name"><%=item.name%></span><span>¥<%=item.price%></span>
+                        </div>
+                        <div class="product-action">
+                            <div class="ibuy js-visit" data-shareid="<%=data.id%>" data-status="<%=item.status%>" data-productid="<%=item.id%>" data-href="<%=item.url%>"><%if(!item.status){%>我来买<%}else{%>已认领<%}%></div><div class="advice js-advice" data-fid="<%=item.id%>">给建议
+                            <%if(item.commentnum>0){%>
+                                <div class="advice-icon"><%=item.commentnum%></div></div>
+                            <%}%>
+                        </div>
+                    </section>
+                </div>
+                <div class="comments comment-<%=item.id%>">
+                        <div class="comment-notice js-notice" data-fid="<%=item.id%>">最新建议<span>(共<span class="js-count">0</span>条)</span><i class="comment-drawer"></i></div>
+                        <div class="js-container">
+                        </div>
+                        <div class="goshare-input">
+                            <div class="comment-send js-user" data-fid="<%=item.id%>" data-shareid="<%=data.id%>">
+                                <div>发送</div>
+                            </div>
+                            <div class="comment-input">
+                                <div><input type="text" name="comment" class="js-comment" placeholder="添加一条建议"/></div>
+                            </div>
+                        </div>
+                </div>
+                <%})%>
+            </div>
+        </div>
+        <div class="edge"></div>
+        <%if(data.claims.length>0){%>
+        <div class="claims">
+            <div class="claim-title"><hr><span>认领详情</span></div>
+            <%_.each(data.claims,function(item){%>
+            <div class="claim">
+                <div class="claim-head">
+                    <div><img src="<%=item.photo%>"></div>
+                </div>
+                <div class="claim-desc">
+                    <div class="claim-rec"><span><%=item.username%></span><span><%=item.update%></span></div>
+                    <div class="claim-op"><span>认领了<%=item.name%></span></div>
+                </div>
+            </div>
+            <%})%>
+        </div>
+        <%}%>
+        <div class="goshare-download">
+            <div>
+                <div class="goshare-container">
+                    <div class="download js-download">
+                        <span>下载妈咪手袋APP</span>
+                    </div>
+                    <div class="goshare-gray"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,53 @@
 window.Jser = {
     _guid: 1,
+    images: {
+            localId: [],
+            serverId: []
+    },
+    qdmap: {
+		"1": "备孕~0周",
+		"2": "0~12周",
+		"3": "13~28周",
+		"4": "29~40周",
+		"5": "出生~满月",
+		"6": "满月~百天",
+		"7": "百天~半岁",
+		"8": "半岁~一岁",
+		"9": "一岁~一岁半",
+		"10": "一岁半~两岁",
+		"11": "两岁~三岁"
+	},
+    area: {
+        "39":"西班牙",
+        "38":"捷克",
+        "36":"越南",
+        "34":"台湾",
+        "33":"丹麦",
+        "28":"俄国",
+        "27":"不丹",
+        "25":"泰国",
+        "24":"瑞士",
+        "23":"瑞典",
+        "22":"挪威",
+        "21":"土耳其",
+        "19":"法国",
+        "18":"奥地利",
+        "17":"德国",
+        "16":"荷兰",
+        "15":"韩国",
+        "14":"日本",
+        "13":"新加坡",
+        "12":"南非",
+        "9":"加拿大",
+        "8":"新西兰",
+        "7":"英国",
+        "6":"意大利",
+        "5":"澳大利亚",
+        "4":"美国",
+        "3":"中国",
+        "2":"俄罗斯",
+        "1":"牙买加"
+    },
     /**
     获取唯一GUID
     * @return {Number} 返回唯一GUID
@@ -25,7 +73,7 @@ window.Jser = {
                 $(t).removeAttr("data-src");
             }
             img.onerror = function() {
-                t.setAttribute("src", "resource/images/loadimg.png")
+                t.setAttribute("src", "resource/images/loadbanner.png")
             }
         }
     },
@@ -69,7 +117,7 @@ window.Jser = {
         return src;
     },
     log: function(str) {
-        window.console && window.console.log(str);
+//        window.console && window.console.log(str);
     },
     setItem: function(key, name) {
         window.localStorage.setItem(key, name);
@@ -77,17 +125,21 @@ window.Jser = {
     getItem: function(key) {
         return window.localStorage.getItem(key) || "";
     },
-    getJSON: function(url, data, sfn, errfn, method, datatype, isload) {
+    getJSON: function(url, data, sfn, errfn, method, datatype, isload){
         var t = this,
             _data = "";
         data = data || {};
+        var mock = data.mock;
         if (typeof data == "string") {
-            _data = data + "&iTime=" + (new Date()).getTime() + "&";
+            _data = data + "timestamp=" + (new Date()).getTime() + "&iTime=" + (new Date()).getTime() + '&client=' + ST.client + '&version=' + ST.version;
         } else {
             _data = data;
-            _data.iTime = (new Date()).getTime();
+            _data.iTime = _data.timestamp = (new Date()).getTime();
+            _data.version = ST.version;
+            _data.client = ST.client;
         }
-        isload && $("#js-loading").show();
+        isload && $("#js-loading").show();;
+
         $("body").queue(function() {
             $.ajax({
                 type: method || "get",
@@ -112,15 +164,16 @@ window.Jser = {
                     $("#js-loading").hide();
                     $("body").dequeue();
                     if (!j) {
-                        Jser.alert("与服务器连接异常，请重试")
+                        Jser.alert("与服务器连接异常，请重试");
                         return false;
                     }
-                    var s = Number(j.code),
+                    var s = Number(j.code || (j.errorcode? j.errorcode: 0)),
                         flag = false;
                     if (typeof j.retcode != "undefined") {
                         s = 0;
                     }
-                    if (s == 0) {
+
+                    if (s == 0 || mock) {
                         flag = true;
                     } else {
                         if (j.msg) {
@@ -128,6 +181,7 @@ window.Jser = {
                         }
                         Jser.log("code:" + j.code + " " + j.msg);
                     }
+
                     if (flag) {
                         sfn && sfn(j);
                     } else {
@@ -243,11 +297,46 @@ window.Jser = {
         if (!$.isEmptyObject(params)) {
             $.extend(WeiXinShare, params);
         }
-        // alert(JSON.stringify(params))
         if (window.wx) {
             weixin6bySet();
         }
     },
+    chooseImg: function($el){
+        var t = this;
+        wx.chooseImage({
+	         success: function (res) {
+	                t.images.localId = res.localIds;
+	                var image = "<div class='choose-photo' style='background:url(" + res.localIds +");background-position:center center;background-size: cover;' ></div>" ;
+	                $el.html(image);
+	         }
+        });
+    },
+    uploadImage: function(){
+        var t = this;
+        var images = t.images;
+        var i = 0, len = images.localId.length;
+        function upload(){
+            if(len){
+   		        wx.uploadImage({
+	  		        localId: images.localId[i],
+	  		        isShowProgressTips:1,
+	  		        success : function(res){
+		  			    i++;
+		  			    images.serverId.push(res.serverId);
+		  			    if(i<len){
+		  				    upload();
+		  			    }else{
+                            alert(images.serverId);
+                        }
+	  		        },
+	  		        fail: function(res){
+	  			        alert(JSON.stringify(res));
+	  		        }
+  		        })
+            }
+        }
+        upload();
+  	},
     share: function(params) {
         if (params) {
             this.setshare(params);

@@ -34,13 +34,22 @@ define('', '', function(require) {
 					_data[i].value = val;
 					_locData[name] = val;
 				})
-				Jser.getJSON(ST.PATH.ACTION + "user/register", _data, function(data) {
-					Jser.setItem("uname", data.data.uname);
-					Jser.setItem("password", _locData["password"]);
-					Jser.setItem("user_id", data.data.user_id);
-
+                _data = {
+                    phone: '18610292641',
+                    password: '123qwe',
+                    vcode: '1086'
+                }
+				Jser.getJSON(ST.PATH.ACTION + "user/register?timestamp=1437323952097&iTime=1437323952097&version=1.0&client=H5", _data, function(data) {
+//					Jser.setItem("uname", data.data.uname);
+//					Jser.setItem("password", _locData["password"]);
+//					Jser.setItem("user_id", data.data.user_id);
+                    Jser.alert("注册成功", function() {
+                        window.location.hash = "#index/index";
+                    });
 				}, function() {
+                   Jser.alert("注册失败", function() {
 
+                   });
 				}, "post");
 			}
 		},
@@ -52,9 +61,10 @@ define('', '', function(require) {
 			var reg = /^(\d{1,4}\-)?(13|15|17|18){1}\d{9}$/;
 			if (reg.test(v1)) {
 				var _data = {
-					"uname": v1
-				}
-				Jser.getJSON(ST.PATH.ACTION + "user/sendEmail", _data, function(data) {
+					"phone": v1,
+                    "type": 1
+				};
+				Jser.getJSON(ST.PATH.ACTION + "sms/send?timestamp=1437323952097&iTime=1437323952097&version=1.0&client=H5", _data, function(data) {
 					Jser.alert(data.msg);
 				}, function() {
 

@@ -3,8 +3,7 @@ define('', '', function(require) {
 	var M = require('base/model');
 	var H = require('text!../../../../tpl/go/view/danpin.html');
 	var model = new M({
-		action: 'product/productListMyGoodByUid',
-		type: "post"
+		action: 'product/getMyFavoriteList'
 	});
 	var V = B.View.extend({
 		model: model,
@@ -23,9 +22,8 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-            if(data.data && data.data.length>1)data.data = data.data.slice(0,2);
+            if(data.data.result && data.data.result.length>1)data.data.result = data.data.result.slice(0,2);
 			var html = _.template(t.template, data);
-            console.log(t.$el, 'danpin');
 			t.$el.show().html(html);
 			Jser.loadimages(t.$el);
 		}
@@ -33,7 +31,7 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"user_id": Jser.getItem("user_id")
+
 			}
 		});
 		return new V({

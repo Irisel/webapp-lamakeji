@@ -8,7 +8,8 @@ define('', '', function(require) {
 
 	var model = new M({
 		pars: {
-			"pageNo": "1"
+//			"pageNo": "1",
+//            "user_id": Jser.getItem("user_id")
 		}
 	});
 	var indexSelf;
@@ -24,6 +25,7 @@ define('', '', function(require) {
 		events: {
 			"click .js-mark": "doMark"
 		},
+        last_page: null,
 		initialize: function() {
 			var t = this;
 			indexSelf = this;
@@ -39,18 +41,29 @@ define('', '', function(require) {
 			var t = this,
 				data = t.model.toJSON();
 			var html = _.template(t.template, data);
-			t.totalSize = Number(data.page.totalSize);
-			t.totalPage = Math.ceil(t.totalSize / data.page.pageSize);
+			t.totalSize = Number(data.data.total);
+			t.totalPage = Math.ceil(t.totalSize / data.data.pageSize);
 			t.$el.show().html(html);
 			// 轮播图
 			new Slider({
 				el: t.$el.find(".js-slider-box")
 			});
+//            var _height = $('.js-wrapper').height();
+//            t.$el.find('.index-wrapper').height(_height - 94);
 			t.bindEvent();
 		},
+        syncMark: function(cj){
+            if(cj.refresh_on){
+                $('#index_index .index-list i[data-fid="'+ cj.refresh_on +'"]').removeClass('mark-icon-on').addClass('mark-icon-on');
+            }else if(cj.refresh_off){
+                $('#index_index .index-list i[data-fid="'+ cj.refresh_off + '"]').removeClass('mark-icon-on').addClass('mark-icon');
+            }
+        },
 		syncRender: function() {
 			var t = this,
 				data = t.model.toJSON();
+            if(t.last_page == data.data)return;
+            t.last_page = data.data;
 			t.isLoad = false;
 			var _html = _.template(list_tpl, data);
 			var $list = t.$el.find(".js-index-list");
@@ -67,33 +80,34 @@ define('', '', function(require) {
 			if (!App.isLogin()) {
 				return false;
 			}
+            event.stopPropagation();
 			var $elem = $(e.currentTarget);
 			var on = Number($elem.attr("data-on"));
-
+            var zan = Number($elem.parent().find('.zan').text()) || 0;
+            var _data = {id: $elem.attr("data-fid")};
 			if (on) {
-				Jser.alert("已收藏过");
+				Jser.confirm("确定要取消关注么？", function() {
+				    Jser.getJSON(ST.PATH.ACTION + "favorite/delFavorite", _data, function(data) {
+					    $elem.removeClass('mark-icon-on').addClass('mark-icon');
+                        var href = $elem.parent().parent().attr('href').replace('on:1', 'on:0');
+                        zan = zan || 1;
+                        $elem.parent().find('.zan').text(zan - 1);
+                        $elem.parent().parent().attr('href', href);
+                        $elem.attr("data-on", 0);
+				});
+			});
 			} else {
-				/*
-				fname:收藏夹名称
-				fdescribe:收藏夹描述
-				user_id：所有者用户主键
-				owner:0：未公开    1：公开
-				father_id:
-				 */
-				var _data = {
-					"fname": $elem.attr("data-fname"),
-					"user_id": Jser.getItem("user_id"),
-					"fdescribe": $elem.attr("data-fdescribe"),
-					"owner": 1,
-					"father_id": $elem.attr("data-fid"),
-					"fromflag": "share"
-				};
-				var url = "favorite/favoriteAdd";
+				var url = "favorite/addFavorite";
 				Jser.getJSON(ST.PATH.ACTION + url, _data, function(data) {
+                    $elem.removeClass('mark-icon').addClass('mark-icon-on');
+                    $elem.data('fid', data.fid);
+                    var href = $elem.parent().parent().attr('href').replace('on:0', 'on:1');
+                    $elem.parent().find('.zan').text(zan + 1);
+                    $elem.parent().parent().attr('href', href);
 					Jser.alert("已成功添加到我的关注");
 				}, function() {
 
-				}, "post");
+				});
 
 				$elem.attr("data-on", "1");
 
@@ -149,7 +163,11 @@ define('', '', function(require) {
 	});
 	return function(pars) {
 		model.set({
-			action: 'favorite/publicFavoriteList'
+			action: 'favorite/getList',
+            pars: {
+//			    "user_id": Jser.getItem("user_id"),
+//			    "fromflag": "myselfandshare"
+		    }
 		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)

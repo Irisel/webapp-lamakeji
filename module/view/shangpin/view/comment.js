@@ -4,7 +4,7 @@ define('', '', function(require) {
 
 	var H = require('text!../../../../tpl/shangpin/view/comment.html');
 	var model = new M({
-		action: 'comment/commentListByPid'
+		action: 'product/commentList'
 	});
 	var V = B.View.extend({
 		model: model,
@@ -19,18 +19,17 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-			data.data.totalSize = data.page.totalSize;
-			data.data.pid = t.model.get("pars")["pid"];
+			data.data.totalSize = data.data.total;
+			data.data.pid = t.model.get("pars")["id"];
 			var html = _.template(t.template, data);
 			t.$el.html(html);
-
 			Jser.loadimages(t.$el);
 		}
 	});
 	return function(pars) {
 		model.set({
 			pars: {
-				"pid": pars.pid
+				"id": pars.id
 			}
 		});
 		return new V({

@@ -5,7 +5,7 @@ define('', '', function(require) {
 	var list_tpl = require('text!../../../tpl/qingdan/view/list.html');
 	window.global_qd_type = 0;
 	var model = new M({
-		action: 'product/productTypeUserList'
+		action: 'category/getList'
 	});
 	/* 
 		-365,-280备孕~0周
@@ -20,19 +20,7 @@ define('', '', function(require) {
 		547,730 一岁半~两岁
 		730,1095 两岁~三岁
 	*/
-	var qdmap = {
-		"1": ["-365", "-280", "备孕", "0周", "1"],
-		"2": ["-280", "-189", "0周", "12周", "2"],
-		"3": ["-189", "-77", "13周", "18周", "3"],
-		"4": ["-77", "0", "19周", "出生", "4"],
-		"5": ["0", "30", "出生", "满月", "5"],
-		"6": ["30", "100", "满月", "百天", "6"],
-		"7": ["100", "182", "百天", "半岁", "7"],
-		"8": ["182", "365", "半岁", "1岁", "8"],
-		"9": ["365", "547", "1岁", "1岁半", "9"],
-		"10": ["547", "730", "1岁半", "2岁", "10"],
-		"11": ["730", "1095", "2岁", "3岁", "11"]
-	};
+	var qdmap = Jser.qdmap;
 	// var indexSelf;
     var _index = Jser.getItem('idx') || '1';
 	var V = B.View.extend({
@@ -50,7 +38,7 @@ define('', '', function(require) {
 			// "click .qd-top-btn": "doSwitchQingdan",
 			"click .js-qd-checked": "doCheckdQingdan",
             "click .js-qingdan-period": "doSetPeriod"
-			// "click .js-dropdown": "doDropdown"
+//			"click .js-dropdown": "doDropdown"
 		},
 		initialize: function() {
 			var t = this;
@@ -66,16 +54,36 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-			data.qdmap = qdmap[_index];
+			data.qdmap = data.period_chosen;
+            data.timeblock = t.model.get("pars")["timeblock"];
+            data.page = {total: 0, finish: 0};
+            var finish = data.data.finish;
+            if(finish.systerm)
+            $.each(data.data.result, function(key, value){
+                    if(finish.systerm.indexOf(value.id)>=0){
+                        value.on = true;
+                        data.page.finish+=1;
+                    }
+            });
+            if(finish.user)
+            $.each(data.data.user, function(key, value){
+                    if(finish.user.indexOf(value.id)>=0){
+                        value.on = true;
+                        data.page.finish+=1;
+                    }
+            });
+            data.page.total = (data.data.result || []).length + (data.data.user || []).length;
+            data.page.unfinish  = data.page.total - data.page.finish;
+            data.period_chosen = qdmap[data.timeblock];
+            console.log(data);
+            var page_type = t.$el.find(".js-dropdown").find("option:selected").text();
+            data.page.type = page_type?page_type: '全部';
 			var html = _.template(t.template, data);
-			// t.totalPage = Number(data.totalPage);
 			t.$el.show().html(html);
 			Jser.loadimages(t.$el);
-			// t.bindEvent();
 			t.$el.find(".js-dropdown").change(function() {
 				var $elem = $(this).find("option:selected");
 				t.doDropdown($elem.attr("data-type"));
-				$elem.parent().html($elem.parent().html());
 				return false;
 			});
 
@@ -136,41 +144,42 @@ define('', '', function(require) {
 		},
 		doCheckdQingdan: function(e) {
 			var $elm = $(e.currentTarget);
+            var type = $elm.attr("data-type");
 			var ptid = $elm.attr("data-ptid");
 			var name = $elm.attr("data-name");
-			if (ptid) {
+			if (!$elm.hasClass("js-del")) {
 				$elm = $elm.parent();
 				var _data = {
-						"user_id": Jser.getItem('user_id'),
-						"ptid": ptid
+						"id": ptid
 					},
-					url = "product/productTypeUserAdd";
+					url = "category/updateCategory";
+                    _data.type = type;
+                    _data.status = 1;
 				if ($elm.hasClass("on")) {
-					url = "product/productTypeUserDelete";
+					url = "category/updateCategory";
+                    _data.status = 0;
 				}
 				$elm.toggleClass("on");
 				Jser.getJSON(ST.PATH.ACTION + url, _data, function(data) {
 
 				}, function() {
 					$elm.toggleClass("on");
-				}, "post");
-			} else if (typeof name != "undefined") {
-				if ($elm.parent().hasClass("on2")) {
+				}, "get");
+			} else{
 					Jser.confirm("确定要删除这件商品吗？", function() {
 						var _data = {
-								"user_id": Jser.getItem('user_id'),
-								"product_name": name
+								"id": ptid
 							},
-							url = "product/deleteListProduct";
+							url = "category/delMyCategory";
 						Jser.getJSON(ST.PATH.ACTION + url, _data, function(data) {
 							$elm.parent().remove();
+                            var page_size = $('.page-size').text();
+                            page_size = page_size?Number(page_size): 0;
+                            if(page_size)$('.page-size').text(page_size - 1);
 						}, function() {
 
 						}, "get");
 					});
-				} else {
-					$elm.parent().toggleClass("on");
-				}
 			}
 		},
         doSetPeriod: function(type){
@@ -178,7 +187,8 @@ define('', '', function(require) {
         },
 		doDropdown: function(type) {
 			var t = this;
-			global_qd_type = type;
+			window.global_qd_type = type;
+            console.log(window.global_qd_type);
 			t.model.fetchData();
 		},
 		doDropdown3: function(type) {
@@ -190,29 +200,35 @@ define('', '', function(require) {
 						_html;
 					if (name.length != 0) {
 						var _data = {
-								"user_id": Jser.getItem('user_id'),
-								"product_name": escape(name)
+								"name": name
 							},
-							url = "product/addListProduct";
+							url = "category/addMyCategory?timestamp=1437323557043&version=1.0&client=H5";
 						Jser.getJSON(ST.PATH.ACTION + url, _data, function(data) {
 							// $elm.parent().remove();
 
 							_html = '<li class="clean product js-product">' + '<div class="qd-left">' + '<p class="qd-title">' + name + '</p>' + '</div>' + '<div class="qd-right js-qd-checked" data-name="' + name + '"><div class="qd-icon del"><i class="icon"></i><i class="del-icon"></i></div></div>' + '</li>'
-
+                            var page_size = $('.page-size').text();
+                            page_size = page_size?Number(page_size): 0;
+                            $('.page-size').text(page_size + 1);
 							t.$el.find(".js-qingdan-list").append(_html);
 						}, function() {
 
-						}, "get");
+						}, "post");
 					}
 				});
 				t.$el.find(".js-product").removeClass("on2");
-
+                t.$el.find(".js-product .js-qd-checked").removeClass("js-del");
+                t.$el.find(".js-product .icon").show();
 				//增加商品
 			} else if (type == 2) {
 				//删除商品
-				t.$el.find(".js-product").addClass("on2");
+				t.$el.find(".js-product").addClass("on2").removeClass("");
+                t.$el.find(".js-product .js-qd-checked").addClass("js-del");
+                t.$el.find(".js-product .icon").hide();
 			} else {
 				t.$el.find(".js-product").removeClass("on2");
+                t.$el.find(".js-product .js-qd-checked").removeClass("js-del");
+                t.$el.find(".js-product .icon").show();
 			}
 		},
 		bindEvent: function() {
@@ -239,7 +255,7 @@ define('', '', function(require) {
 			if (t.page <= t.totalPage) {
 				var pars = {
 					"pageNo": t.page
-				}
+				};
 				t.isLoad = true;
 				t.$el.find(".js-list-loading").show();
 				t.changePars(pars);
@@ -270,14 +286,15 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"user_id": Jser.getItem('user_id'),
-				"ptmin": qdmap[_index][0],
-				"ptmax": qdmap[_index][1]
+//				"user_id": Jser.getItem('user_id'),
+//				"ptmin": qdmap[_index][0],
+//				"ptmax": qdmap[_index][1]
 //				"idx": pars.idx
+                timeblock: pars.idx
 			}
 		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)
 		});
 	}
-})
+});

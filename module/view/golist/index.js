@@ -4,14 +4,14 @@ define('', '', function(require) {
 	var H = require('text!../../../tpl/golist/index.html');
 	var list_tpl = require('text!../../../tpl/golist/view/list.html');
 	var model = new M({
-		action: 'product/productListByFid'
+		action: 'gogroup/getDetail'
 	});
 	var V = B.View.extend({
 		model: model,
 		template: H,
 		events: {
 			"click .js-back": "goback",
-			"click .js-share": "doShare",
+			"click .js-share": "doShare"
 		},
 		initialize: function() {
 			var t = this;
@@ -23,8 +23,7 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-			data.data.fdata = data.fdata;
-			data.data.fid = t.model.get("pars")["fid"];
+            data.product = data.data.product;
 			var html = _.template(t.template, data);
 			t.$el.show().html(html);
 			if (data.length != 0) {
@@ -44,17 +43,18 @@ define('', '', function(require) {
 		},
 		setShare: function() {
 			var t = this;
-			var fid = t.model.get("pars")["fid"];
+			var fid = t.model.get("pars")["id"];
 			// var url = ST.PATH.SHARE + "?fid=" + fid;
 			var shareTitle = Jser.getItem("fid" + fid)+"－妈咪手袋";
 			// alert("fid:"+fid+",name:"+Jser.getItem("fid" + fid));
 			var descContent = "妈咪口袋";
-			var url = 'http://www.lamakeji.com/mamago/index.php/weixin/productShare?fid=' + fid + '&shareUserId=' + Jser.getItem("user_id") + '&tpid=4&topic=' + shareTitle + '&ftitle=' + descContent + '&from=singlemessage&isappinstalled=1';
+//			var url = 'http://www.lamakeji.com/mamago/index.php/weixin/productShare?fid=' + fid + '&shareUserId=' + Jser.getItem("user_id") + '&tpid=4&topic=' + shareTitle + '&ftitle=' + descContent + '&from=singlemessage&isappinstalled=1';
+            var url = 'http://www.lamakeji.com/webapp/#share/index/fid:'+ fid +'/userid:'+ Jser.getItem("user_id") +'/?share=true';
 			Jser.setshare({
 				imgUrl: "",
 				lineLink: url,
 				shareTitle: shareTitle, //"妈咪口袋" + Jser.getItem("fid" + fid),
-				descContent: descContent,
+				descContent: descContent
 			});
 		},
 		doShare: function() {
@@ -70,11 +70,12 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"fid": pars.fid
+				"id": pars.id,
+                "expand": "product"
 			}
 		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)
 		});
 	}
-})
+});

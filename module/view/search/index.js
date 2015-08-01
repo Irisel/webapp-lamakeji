@@ -6,9 +6,9 @@ define('', '', function(require) {
 	var list_tpl = require('text!../../../tpl/search/view/list.html');
 
 	var model = new M({
-		type: "post",
+		type: "get",
 		isload: "false",
-		action: 'product/productListForPname'
+		action: 'product/getList'
 	});
 	var indexSelf;
 	var V = B.View.extend({
@@ -21,7 +21,7 @@ define('', '', function(require) {
 		totalPage: 1, // 总页数
 		events: {
 			"click .js-back": "goback",
-			"click .js-search": "doSearch",
+			"click .js-search": "doSearch"
 		},
 		initialize: function() {
 			var t = this;
@@ -51,10 +51,11 @@ define('', '', function(require) {
 			var t = this,
 				data = t.model.toJSON();
 			t.isLoad = false;
+            if(!data.result)t.$el.find('.js-list-looking').show();
 			var _html = _.template(list_tpl, data);
 			t.$el.find(".js-list-area").append(_html);
-			t.pageSize = Number(data.page.pageSize);
-			t.totalPage = Math.ceil(data.page.totalSize / t.pageSize);
+//			t.pageSize = Number(data.page.pageSize);
+//			t.totalPage = Math.ceil(data.page.totalSize / t.pageSize);
 			Jser.loadimages(t.$el.find(".js-list-area"));
 		},
 		bindEvent: function() {
@@ -105,10 +106,12 @@ define('', '', function(require) {
 		doSearch: function() {
 			var t = this;
 			var val = $.trim(t.$el.find(".js-search-val").val());
+            t.$el.find('js-list-looking').hide();
 			if (val) {
 				t.changePars({
-					"search_pname": val,
-					"pageNo": 1
+					"keyword": val
+//
+//					"pageNo": 1
 				});
 				t.$el.find(".js-list-area").html('');
 			}

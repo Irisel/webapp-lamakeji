@@ -13,27 +13,54 @@ define(function(require, exports, module) {
         var status_access = {
                 prepare: true,
                 wondering: true,
-                borm: false,
+                born: false,
                 during: false
         };
-        $('.status-icon').click(function(e){
-            var status = $(e.target).data('status');
+        var qdmap = {
+		    prepare: 1,
+		    during: 2,
+		    born: 5,
+		    wondering: 0
+	    };
+        var sign_lama = function(status){
                 if(window.localStorage){
                     var lama = Jser.getItem('lama');
                     if(!lama){
                         Jser.setItem('lama', JSON.stringify({status: status, signed:status_access[status]}));
                     }else{
                         var lama_json = JSON.parse(lama);
-                        lama_json.status = status;
+                        lama_json.xinxistatus = status;
                         lama_json.signed = status_access[status];
                         Jser.setItem('lama', JSON.stringify(lama_json));
                     }
-
                 }
+        };
+        var redirect = function(status){
             if(status_access[status]){
                 location.href = "/webapp";
             }else{
                 location.href = "/webapp/date.html";
+            }
+        }
+        var logged = function(status){
+			var _data = {
+                    "timeblock": qdmap[status]
+			};
+			Jser.getJSON(ST.PATH.ACTION + "user/update?timestamp=1437323557043&version=1.0&client=H5", _data, function(data) {
+                sign_lama(status);
+                redirect(status);
+			}, function() {
+
+			}, "post");
+        }
+
+        $('.status-icon').click(function(e){
+            var status = $(e.target).data('status');
+            if(Jser.getItem('phone')){
+                logged(status);
+            }else{
+                sign_lama(status);
+                redirect(status);
             }
         })
   };
@@ -64,9 +91,26 @@ define(function(require, exports, module) {
                   return undefined;
               }
           }
-      }
+      };
       var mobile = mobileType.check();
+      var date_submit = function(lama_json){
+            if(Jser.getItem('phone')){
+			var _data = {
+                    "sex": lama_json.xinxigender == 'female'?'1': '0',
+                    "birthday": lama_json.xinxichoosen
+			};
+			Jser.getJSON(ST.PATH.ACTION + "user/update?timestamp=1437323557043&version=1.0&client=H5", _data, function(data) {
+                    Jser.setItem("sex", data.data.sex);
+					Jser.setItem("timeblock", data.data.timeblock);
+                    Jser.setItem("birthday", data.data.birthday);
+                location.href = "/webapp";
+			    }, function() {
 
+			    }, "post");
+            }else{
+                location.href = "/webapp";
+            }
+      };
       if(mobile == 'android'){
           require('plusin/mTime/date')($);
 //          $('.demo').append("<input id='beginTime' class='kbtn'/>");
@@ -84,7 +128,7 @@ define(function(require, exports, module) {
                 event.preventDefault();
                  $('#beginTime').trigger('focus');
                 }
-          )
+          );
           $('#beginTime').on("blur", function(){
 
               var value  = this.value;
@@ -98,7 +142,7 @@ define(function(require, exports, module) {
       if(window.localStorage){
           var lama = Jser.getItem('lama');
           var lama_json = JSON.parse(lama);
-          var status = lama_json.status, form = $('.baby-form');
+          var status = lama_json.xinxistatus, form = $('.baby-form');
           if(status=='born'){
               $('#header_date')[0].innerText = '设置出生日期';
               form.removeClass('init-form');
@@ -117,17 +161,36 @@ define(function(require, exports, module) {
           $('.btn-submit').click(function(){
               var lama = Jser.getItem('lama');
               var lama_json = JSON.parse(lama);
-              lama_json.date_choosen = $('#baby-form-date').data('date');
-              lama_json.baby_gender = $('.gender-on').data('gender');
+              lama_json.xinxichoosen = $('#baby-form-date').data('date');
+              lama_json.xinxigender = $('.gender-on').data('gender');
               lama_json.signed = true;
               Jser.setItem('lama', JSON.stringify(lama_json));
-              if(lama_json.date_choosen && lama_json.baby_gender)location.href = "/webapp";
+              if(lama_json.xinxichoosen && lama_json.xinxigender)date_submit(lama_json);
           })
       }
-                var d = new Date(),vYear = d.getFullYear(),vMon = d.getMonth() + 1,vDay = d.getDate();
-                s =vYear+(vMon<10 ? "0" + '-' + vMon : vMon)+ '-' +vDay;
-                baby_form_date.html(s);
-                baby_form_date.data('date', s);
+          var sex = '1';
+          if(Jser.getItem('phone')){
+                s = Jser.getItem('birthday');
+                sex = Jser.getItem('sex');
+                console.log(sex);
+          }else{
+                s = lama_json.xinxichoosen;
+                sex = (lama_json == 'female')?'1': '0';
+          }
+          if(!s){
+            var d = new Date(),vYear = d.getFullYear(),vMon = d.getMonth() + 1,vDay = d.getDate();
+            s =vYear+(vMon<10 ? "0" + '-' + vMon : vMon)+ '-' +vDay;
+          }
+          if(sex == '1'){
+              $('.js-male').removeClass('gender-on').addClass('gender-off');
+              $('.js-female').removeClass('gender-off').addClass('gender-on');
+          }else{
+              $('.js-male').removeClass('gender-off').addClass('gender-on');
+              $('.js-female').removeClass('gender-on').addClass('gender-off');
+          }
+          baby_form_date.html(s);
+          baby_form_date.data('date', s);
+
   };
     exports.period_init = function(){
         var idx = Jser.getItem('idx') || '1';
@@ -142,8 +205,7 @@ define(function(require, exports, module) {
 	      }
         });
         $('.period-row').click(function(e){
-            Jser.setItem('idx', $(e.target).parent().data("idx"));
-            window.location.href = "/webapp/#qingdan/index/idx:1";
+            window.location.href = "/webapp/#qingdan/index/idx:" + $(e.target).parent().data("idx");
         })
   }
 });

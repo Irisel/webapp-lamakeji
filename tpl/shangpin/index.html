@@ -1,23 +1,23 @@
 <div class="header">
 	<a href="javascript:;" class="btn-back js-back"> <i class="icon"></i>
 	</a>
-	<%=data.ptname%>
-    <a href="javascript:;" class="js-praise" data-isgood="<%=data.isgood%>"><i class="icon icon-heart<%=data.isgood!="no"?" icon-heart-on":""%>"></i></a>
+	<span class="shangpin-header-title"><%=data.pname%></span>
+    <a href="javascript:;" class="js-praise" data-isgood="<%=data.isfollow%>"><i class="icon icon-heart<%=data.isfollow==1?" icon-heart-on":""%>"></i></a>
 	<a href="javascript:;" class="btn-share js-share" data-imgUrl="<%=data.picture%>" data-share="<%=data.html_url%>" data-shareTitle="<%=data.ptname%>" data-descContent="<%=data.pname%>"> <i class="icon"></i>
 	</a>
 </div>
 <div class="shangpin-wrapper">
 	<div class="slider-box slider-box2 js-slider-box">
 		<ul class="slider-list">
-			<%_.each(data.pictureList,function(item){%>
+			<%_.each(data.images,function(item){%>
 				<li>
-					<img src="resource/images/loadimg.png" data-src="<%=item%>" alt=""/>               
+					<img src="resource/images/loadproduct.png" data-src="<%=item%>" alt=""/>
 				</li>
 			<%})%>
 		</ul>
 		<div class="slider-point">
 			<ul class="js-sliderIdx">
-				<%_.each(data.pictureList,function(item,i){%>
+				<%_.each(data.images,function(item,i){%>
 					<li class="<%=(i==0?"on":"")%>"></li>
 				<%})%>                         
 			</ul>
@@ -34,11 +34,11 @@
 	<table class="shangpin-title">
 		<tr>
 			<td>
-				<p class="p1"><%=data.pname%></p>
-				<p class="p2">￥<%=data.price%>·<%=data.place%>·<%=data.buytime%></p>
+				<p class="p1"><%=data.name%></p>
+				<p class="p2">参考价格￥<%=data.price%>·<%=data.place%></p>
 			</td>
 			<td class="shangpin-right">
-				<a href="<%=data.html_url%>" class="buy" target="_blank">立即购买</a>
+				<a data-href="<%=data.html_url%>" class="buy js-buy" target="_blank">立即购买</a>
 			</td>
 		</tr>
 	</table>
@@ -62,19 +62,21 @@
 		<li><div>商品评论</div></li>
 	</ul>
 	<ul class="shangpin-tab-highlight flex-equal js-tab-highlight">
-		<li class="on"><div></div></li>
-		<li><div></div></li>
+		<li class="on"><div class="left"></div></li>
+		<li><div class="right"></div></li>
 	</ul>
 	<div class="shangpin-comment-box">
-		<ul class="comment-btn-box clean js-comment-btn">
-			<li><a href="#comment/index/pid:<%=data.pid%>"><i class="icon icon-comment"></i></a></li>
-			<li><a href="#qdlist/index/pid:<%=data.pid%>"><i class="icon icon-all-comment"></i></a></li>
-		</ul>
 		<div class="shangpin-content js-tab-content">
-			<p class="p-title">[<%=data.buytime%>]</p>
-			<p class="p-txt"><%=data.txt%></p>
+			<!--<p class="p-title">[<%=data.buytime%>]</p>-->
+			<p class="p-txt"><%=data.description%></p>
 		</div>
 		<div class="shangpin-content js-tab-content shangpin-comment js-shangpin-comment hide">			
 		</div>
 	</div>
+    <div class="shangpin-comment-box">
+        <ul class="comment-btn-box clean js-comment-btn">
+			<li><a href="#comment/index/pid:<%=data.id%>"><i class="icon icon-comment"></i><span>写评论</span></a></li>
+			<li><a href="#qdlist/index/pid:<%=data.id%>"><i class="icon icon-all-comment"></i><span>加入心愿单</span></a></li>
+        </ul>
+    </div>
 </div>

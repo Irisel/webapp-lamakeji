@@ -1,28 +1,35 @@
 <div class="header">
 	go
-	<a href="#add/index" class="hd-right go-add">+</a>
+	<a href="#add/index" class="hd-right hd-btn"><i class="add-icon"></i></a>
 </div>
 <div class="go-tab">
     <a class="tab">
         <div class="active-tab">心愿单</div>
     </a>
     <a href="#go/guanzhu" class="tab">
-        <div>关注</div>
+        <div>我的关注</div>
     </a>
 </div>
 <div class="first-wrapper go-wrapper">
-<ul class="go-list js-go-list">
-	<%_.each(data,function(item){%>
-	<%if(item.father_id=="0"){%>
+<ul class="xinyuan-list js-go-list">
+	<%_.each(result,function(item){%>
+	<%if(item.system=="0"){%>
 		<li data-is_recommend="<%=item.is_recommend%>">
-			<a href="#golist/index/fid:<%=item.fid%>">
-				<%=Jser.setItem("fid"+item.fid,item.fname)%>
-                <img src="<%=item.picture%>">
-				<p class="p1"><%=item.fname%></p>
-				<p class="p2"><%=item.pnum%>件商品</p>
+			<a href="#golist/index/id:<%=item.id%>">
+				<%=Jser.setItem("fid"+item.id,item.name)%>
+                <div>
+                <%if(item.picture){%>
+                <img src="<%=item.picture%>" class="js-golist-remove" data-fid="<%=item.id%>" data-userid="<%=item.userid%>">
+                <%}%>
+                <%if(!item.picture){%>
+                <img src="/webapp/resource/images/default.png" class="js-golist-remove" data-fid="<%=item.id%>" data-userid="<%=item.userid%>">
+                <%}%>
+                </div>
+				<p class="p1"><%=item.name%></p>
+				<p class="p2"><%=item.productnum%>件商品</p>
 				<div class="go-right"><i class="icon icon-arrows-left"></i></div>
 			</a>
-			<div class="go-remove js-golist-remove" data-fid="<%=item.fid%>">删除</div>
+            <!--<div class="go-remove " ></div>-->
 		</li>
 	<%}%>
 	<%})%>	

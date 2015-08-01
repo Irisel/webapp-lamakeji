@@ -8,7 +8,7 @@ define('', '', function(require) {
 	var Comment = require("view/shangpin/view/comment");
 
 	var model = new M({
-		action: 'product/productByPid'
+		action: 'product/getDetail'
 	});
 	var V = B.View.extend({
 		model: model,
@@ -16,7 +16,8 @@ define('', '', function(require) {
 		events: {
 			"click .js-back": "goback",
 			"click .js-share": "doShare",
-			"click .js-praise": "doPraise"
+			"click .js-praise": "doPraise",
+            "click .js-buy": "jd"
 		},
 		initialize: function() {
 			var t = this;
@@ -25,11 +26,25 @@ define('', '', function(require) {
 				t.render();
 			});
 		},
+        jd : function(e){
+            var target = $(e.currentTarget);
+            var href = target.data("href");
+            if(href){
+                window.location = href;
+            }else{
+                this.showShare();
+            }
+        },
+        showShare: function() {
+            $(".js-go_share").show().on("mousedown.share", this.hideShare);
+        },
+        hideShare: function() {
+            $(".js-go_share").hide().off("mousedown.share");
+        },
 		//待优化
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-			data.data = data.data[0];
 			// pdescribe: "[{"MOWIsDPlsoHkuYvpl7Q=":"\u63a8\u8f66\u662f\u5a74\u513f\u91cd\u8981\u7684\u51fa\u884c\u5de5\u5177\uff0c\u9700\u8981\u8003\u8651\u7684\u7ec6\u8282\u6709\u5f88\u591a\uff0c\u6bd4\u5982\u643a\u5e26\u662f\u5426\u65b9\u4fbf\uff0c\u6298\u53e0\u662f\u5426\u5bb9\u6613\uff1f\u7238\u7238\u5988\u5988\u4e5f\u8d8a\u6765\u8d8a\u6ce8\u610f\u548c\u5b9d\u5b9d\u7684\u4ea4\u6d41\uff0c\u9ad8\u5ea7\u4f4d\u7684\u8bbe\u8ba1\u53ef\u4ee5\u6ee1\u8db3\u7238\u7238\u5988\u5988\u7684\u8fd9\u4e2a\u9700\u6c42\uff0c\u6839\u636e\u81ea\u5df1\u7684\u5fc3\u610f\u968f\u610f\u8c03\u8282\u7684\u63a8\u8f66\u80fd\u6700\u5927\u9650\u5ea6\u4e3a\u5988\u5988\u63d0\u4f9b\u968f\u6027\u4efb\u6027\u7684\u751f\u6d3b\u3002"}]",
 			var pdescribe = {},
 				txt = "";
@@ -45,7 +60,9 @@ define('', '', function(require) {
 				}
 			}
 			data.data.txt = txt;
-			if (!data.data.pictureList) {
+            if(data.data.areaid)data.data.place = Jser.area[data.data.areaid];
+            if(data.data.timeblock)data.data.buytime = Jser.qdmap[data.data.timeblock];
+			if (!data.data.images) {
 				var picture_arr = [];
 				// "http://img13.360buyimg.com/n5/jfs/t148/122/1928837335/178654/e6e1cffb/53bd0a9cNe991f734.jpg,,,http://img13.360buyimg.com/n5/jfs/t184/259/1841534365/200245/adef5da/53bd0a8dNb7631c5c.jpg,,,http://img13.360buyimg.com/n5/jfs/t202/163/1857516600/272946/1042bdfa/53bd0ad8N8c8c089f.jpg,,,http://img13.360buyimg.com/n5/jfs/t130/126/4881294294/146165/c187b01c/537ad954N944b3be6.jpg,,,";
 				if (data.data.picture_str) {
@@ -57,14 +74,14 @@ define('', '', function(require) {
 				} else {
 					picture_arr.push(data.data.picture);
 				}
-				data.data.pictureList = picture_arr;
+				data.data.images = picture_arr;
 			}
 			var html = _.template(t.template, data);
 			t.$el.show().html(html);
 
 			// 评论
 			new Comment({
-				pid: t.model.get("pars")["pid"],
+				id: t.model.get("pars")["id"],
 				el: t.$el.find(".js-shangpin-comment")
 			});
 
@@ -133,27 +150,26 @@ define('', '', function(require) {
 			var $elem = $(e.currentTarget);
 			var isGood = $elem.attr("data-isgood");
 			var t = this;
-			var pid = t.model.get("pars")["pid"];
+			var pid = t.model.get("pars")["id"];
 			var _data = {
-				"pid": pid,
-				"user_id": Jser.getItem("user_id")
+				"id": pid
 			}
-			var type = "post";
+			var type = "get";
 			var url = ST.PATH.ACTION;
-			if (isGood == "yes") {
-				url += "product/productDeleteGood";
+			if (isGood == 1) {
+				url += "product/delFavorite";
 				type = "get";
 			} else {
-				url += "product/productAddGood"
+				url += "product/addFavorite"
 			}
 			Jser.getJSON(url, _data, function(data) {
-				if (Number(data.code) == 0) {
-					if (isGood == "yes") {
-						$elem.attr("data-isgood", "no");
+				if (Number(data.errorcode) == 0) {
+					if (isGood == 1) {
+						$elem.attr("data-isgood", 0);
 						// var txt = "取消点赞";
 						$elem.find("i").removeClass("icon-heart-on");
 					} else {
-						$elem.attr("data-isgood", "yes");
+						$elem.attr("data-isgood", 1);
 						// var txt = "点赞";
 						$elem.find("i").addClass("icon-heart-on");
 					}
@@ -174,7 +190,7 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"pid": pars.pid,
+				"id": pars.id,
 				"user_id": Jser.getItem('user_id')
 			}
 		});

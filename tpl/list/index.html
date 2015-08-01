@@ -1,15 +1,27 @@
 <div class="header">	
 	<a href="javascript:;" class="btn-back js-back"><i class="icon"></i></a>
-	<%=Jser.getItem("fid"+data.fid)%>
+	<span class="list-header-title">
+        <%=Jser.setItem("fdescribe"+data.id, data.name)%>
+        <%=data.name%>
+    </span>
+    <a href="javascript:;" class="js-praise"><i class="js-mark icon icon-heart <%=data.on==1?'icon-heart-on':''%>" data-fid="<%=data.id%>" data-on="<%=data.on%>"></i></a>
 	<a href="javascript:;" class="btn-share js-share" data-share=""><i class="icon"></i></a>
 </div>
-<div class="list-wrapper">	
-	<%if(data.fdata&&!data.guanzhu&&data.fdata.length>0){%>
-		<div class="list-top">
-			<img src="<%=data.fdata[0].finnerpicture%>" />
-		</div>
-	<%}%>
+<div class="list-wrapper">
+	<!--<%if(data.fdata&&!data.guanzhu&&data.fdata.length>0){%>-->
+		<!--<div class="list-top">-->
+			<!--<img src="<%=data.fdata[0].finnerpicture%>" />-->
+		<!--</div>-->
+	<!--<%}%>-->
+    <div class="wrapper-share">
+        <div class="strategy-share"></div>
+    </div>
 	<ul class="list-area js-list-area clean">
-		
 	</ul>
+</div>
+<div class="heji-comment-box">
+    <ul class="comment-btn-box clean js-comment-btn">
+	    <li><a href="#list/comment/pid:<%=data.id%>"><i class="icon icon-comment"></i><span>写评论</span></a></li>
+		<li><a href="#list/comment/pid:<%=data.id%>"><i class="icon icon-heji-comments"></i><span>查看评论</span></a></li>
+    </ul>
 </div>

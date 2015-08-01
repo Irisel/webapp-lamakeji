@@ -2,7 +2,11 @@ define('', '', function(require) {
 	var B = require('backbone');
 	var M = require('base/model');
 	var H = require('text!../../../tpl/login/index.html');
-    window.localStorage.removeItem('user_id');
+	var model = new M({
+		pars: {
+			"user_id": Jser.getItem("user_id")
+		}
+	});
 	var V = B.View.extend({
 		template: H,
 		events: {
@@ -31,12 +35,15 @@ define('', '', function(require) {
 					val = $.trim(item.value);
 					_data[i].value = val;
 					_locData[name]=val;
-				})
-				Jser.getJSON(ST.PATH.ACTION + "user/login", _data, function(data) {
-					Jser.setItem("uname", data.data.uname);
+				});
+                console.log(_locData);
+				Jser.getJSON(ST.PATH.ACTION + "user/login?timestamp=1437323952097&version=1.0&client=H5", _locData, function(data) {
+					Jser.setItem("phone", data.data.phone);
 					Jser.setItem("password",_locData["password"]);
-					Jser.setItem("user_id", data.data.user_id);
-					window.location.href = "#index/index";
+                    Jser.setItem("sex", data.data.sex);
+					Jser.setItem("timeblock", data.data.timeblock);
+                    Jser.setItem("birthday", data.data.birthday);
+					window.location.href = '#index/index';
 				}, function() {
 
 				}, "post");
@@ -68,8 +75,13 @@ define('', '', function(require) {
 		}
 	});
 	return function(pars) {
+		model.set({
+			pars: {
+				"user_id": Jser.getItem('user_id')
+			}
+		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)
 		});
 	}
-})
+});

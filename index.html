@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0,minimal-ui">
     <title>妈咪手袋</title>
     <link rel="stylesheet" href="resource/css/code-index.css"/>
-    <script type="text/javascript" src="module/lib/Jser.js"></script> 
+    <script type="text/javascript" src="module/lib/Jser.js"></script>
     <script type="text/javascript" src="resource/js/jweixin-1.0.0.js"></script>
     <script type="text/javascript" src="resource/js/weixinshare.js"></script>
     <script type="text/javascript" src="module/lib/sea.js"></script>
@@ -27,8 +27,9 @@
             }
          }
      }
-
-     if(!(tourist || logged))location.href="/webapp/tourist.html";
+     url = window.location.href;
+     var isa_share = !!(url.match(/fid:[\d+]/) && url.match(/\?[share=true]/));
+     if(!(tourist || logged || isa_share))location.href="/webapp/tourist.html";
      seajs.config({
             base: '/webapp/module',
             alias: {
@@ -40,13 +41,15 @@
     });
     var ST = {
         PATH:{
-            ACTION:"http://www.lamakeji.com/mamago/index.php/",
+            ACTION:"http://www.lamakeji.com/api/",
             ROOT:"/api",
             IMAGE:"/resource/images/",
             UPLOAD:"",
             SHARE:"http://www.lamakeji.com/mamago/html/share/share.html",
             AJAXIMG:"http://www.lamakeji.com/mamago/uploads/"
-        }
+        },
+        client: 'H5',
+        version: '1.0'
     }
     </script>
 </head>
@@ -76,7 +79,15 @@
         </div>
     </div>
     <div class="weixin_share js-weixin_share">
-        <img src="resource/images/share.png" class="share" />        
+        <img src="resource/images/share.png" class="share" />
+    </div>
+    <div class="weixin_share js-go_share">
+        <img src="resource/images/goshare_miss.png" class="share" />
+    </div>
+    <div class="weixin_share js-go_download">
+        <img src="resource/images/goshare_download.png" class="share" />
+    </div>
+    <div class="weixin_share js-go_finish">
     </div>
     <div class="tpl hide">
         <div id="js-pop-tpl">
@@ -90,8 +101,7 @@
             </div>
         </div>
     </div>
-    
-    <script  type="text/javascript">   
+    <script  type="text/javascript">
     seajs.use('app.js', function(app) {
         app.run();
          // loadlogin();
@@ -120,11 +130,9 @@
         // location.href="http://www.lamakeji.com/mamago/index.php/weixin/getAuth";
         //origin url http://www.lamakeji.com/
         Jser.getJSON("http://www.lamakeji.com/mamago/index.php/weixin/authCallback?code=0210e8c12bbb6e2016c8c2d694ae708S&state=123","", function(data) {
-            // setwxconfig(data);
-            alert(JSON.stringify(data))
+            setwxconfig(data);
         }, function(data) {
-            alert(JSON.stringify(data))
-            // setwxconfig(data);
+            setwxconfig(data);
         }, "get", "json", true)
     }
     function doQingDanNav(){
@@ -150,7 +158,7 @@
             setwxconfig(data);
         }, "get", "json", true)
     };
-    
+
     function setwxconfig(data){
         if (window.wx) {
                 // wx.config(data);
@@ -162,16 +170,18 @@
                  signature: data.share.sign,
                  jsApiList: [
                      'onMenuShareTimeline',
-                     'onMenuShareAppMessage'
+                     'onMenuShareAppMessage',
+                     'chooseImage',
+                    'uploadImage'
                      // 'onMenuShareQQ',
                      // 'onMenuShareWeibo',
                      // 'getNetworkType'
                  ]
                 });
                 weixin6();
-                // wx.error(function(res) {
-                //    loadwxconfig();
-                // });
+                wx.error(function(res) {
+//                    loadwxconfig();
+                });
             }
     }
     </script>

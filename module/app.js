@@ -91,11 +91,16 @@ define(function(require, exports) {
                     if (b != "model" && b != "action") b && (cj[b] = c);
                 });
             }
-            //动态生成容器
+            //动态生成容器;
             if (!el.length) B.$("<section />").attr("id", md + "_" + ac).appendTo($("#js-wrap"));
             B.$("#js-wrap").children("section").hide();
             //加载model目录下对应的模块
+
             var view = md + ac;
+            if(cj.log =='in' || cj.log =='out'){
+                delete App.Views['wodeindex'];
+                delete App.Views['goindex'];
+            }
             if (!App.Views[view]) {
                 $("#js-loading").show();
                 require.async(['view', md, ac].join('/'), function(cb) {
@@ -108,7 +113,8 @@ define(function(require, exports) {
                         // location.hash="404";
                     }
                 })
-            } else {
+            }
+            else {
                 var result = false;
                 if (md == "go" || md == "add" || md == "forget") {
                     result = true;
@@ -126,11 +132,12 @@ define(function(require, exports) {
                     App.Views[view].cj = $.extend({}, cj);
                     App.Views[view].changePars && App.Views[view].changePars(cj);
                 } else {
+                    if(md == "index")App.Views[view].syncMark(cj);
                     App.Views[view].$el.show();
                     scrollTop();
                 }
             }
-        },
+        }
     });
     //定义全局变量App
     window.App = {
@@ -142,7 +149,7 @@ define(function(require, exports) {
             B.history.start();
         },
         isLogin: function(isBool) {
-            var result = Jser.getItem("user_id") ? true : false;
+            var result = Jser.getItem("phone") ? true : false;
             if (!result) {
                 Jser.confirm("请先登录", function() {
                     window.location.hash = "#login/index";

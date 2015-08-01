@@ -4,8 +4,8 @@ define('', '', function(require) {
 	var H = require('text!../../../tpl/go/index.html');
 	var model = new M({
 		pars: {
-			"user_id": Jser.getItem("user_id"),
-			"fromflag": "myselfandshare"
+//			"user_id": Jser.getItem("user_id"),
+//			"fromflag": "myselfandshare"
 		}
 	});
 	var _x = "";
@@ -25,7 +25,7 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
-			var html = _.template(t.template, data);
+			var html = _.template(t.template, data.data);
 			t.$el.show().html(html);
 			var h = Math.max($(document).height() - t.$el.height() - 20, 20);
 			t.$el.find(".js-go-new").css("transform", "translateY(" + h + "px)");
@@ -43,6 +43,8 @@ define('', '', function(require) {
 			var offloadFn = function(fn) {
 				setTimeout(fn || noop, 0)
 			}; //
+            var timeout = undefined;
+            var touchend = true;
 			var events = {
 
 				handleEvent: function(event) {
@@ -108,7 +110,7 @@ define('', '', function(require) {
 					// determine if scrolling test has run - one time test
 					if (!isScrolling) {
 						_x = Math.abs(delta.x);
-						console.log(_x)
+//						console.log(_x)
 						isScrolling = _x > 30 && _x > Math.abs(delta.y);
 					} else {
 						event.preventDefault();
@@ -142,9 +144,28 @@ define('', '', function(require) {
 			});
 
 			$(".js-golist-remove").on("touchstart", function(event) {
-				t.doRemove(event);
-				event.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
+                if(touchend){
+                  touchend = false;
+                  timeout = setTimeout(function(){
+                    if($(event.currentTarget).data('userid') == '1'){
+                        Jser.alert("默认的心愿单不能删除");
+                    }else{
+                        t.doRemove(event);
+                    }
+                    touchend = true;
+                  }, 750);
+                }
+
 				// event.preventDefault();
+			});
+
+            $(".js-golist-remove").on("touchend", function(event) {
+               clearTimeout(timeout);
+//                console.log(event.target);
+               if(!touchend)location.href = '#golist/index/id:' + $(event.target).data('fid');
+               touchend = true;
 			});
 
 
@@ -179,8 +200,9 @@ define('', '', function(require) {
 		doRemove: function(e) {
 			var t = this;
 			var $elem = $(e.currentTarget);
+            var _data = {fid: $elem.attr("data-fid"), type: 1, user_id: Jser.getItem("user_id")};
 			Jser.confirm("确定要删除此go单么？", function() {
-				Jser.getJSON(ST.PATH.ACTION + "favorite/favoriteDelete", "fid=" + $elem.attr("data-fid"), function(data) {
+				Jser.getJSON(ST.PATH.ACTION + "gogroup/delete", _data, function(data) {
 					$elem.parent().remove();
 				});
 			});
@@ -196,10 +218,14 @@ define('', '', function(require) {
 	});
 	return function(pars) {
 		model.set({
-			action: 'favorite/favoriteMyList'
+			action: 'gogroup/getList',
+            pars: {
+//			    "user_id": Jser.getItem("user_id"),
+//			    "fromflag": "myselfandshare"
+		    }
 		});
 		return new V({
 			el: $("#" + pars.model + "_" + pars.action)
 		});
 	}
-})
+});

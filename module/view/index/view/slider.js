@@ -41,7 +41,7 @@ define('', '', function(require) {
 	});
 	return function(pars) {
 		model.set({
-			action: 'carousel/carouselList'
+			action: 'baseinfo/homeBanner'
 		});		
 		return new V({
 			el: pars.el

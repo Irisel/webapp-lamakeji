@@ -1,9 +1,9 @@
-<%if(data.length==0){%>
+<%if(!data.result || data.result.length==0){%>
 	<li>
 		<p style="text-align:center;margin-top:50px;">还没有评论哦，快来评价一下吧。</p>
 	</li>
 <%}else{%>
-	<%_.each(data,function(item,i){%>
+	<%_.each(data.result,function(item,i){%>
 	<li>
 		<div class="sleft"><img src="resource/images/wode.png" data-src="<%=item.photo||"resource/images/wode.png"%>" ></div>
 		<div class="sright" style="<%i==0?"border:none;":""%>">

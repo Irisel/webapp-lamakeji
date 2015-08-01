@@ -4,7 +4,7 @@ define('', '', function(require) {
 	var H = require('text!../../../tpl/comment/index.html');
 	var list_tpl = require('text!../../../tpl/comment/view/list.html');
 	var model = new M({
-		action: 'comment/commentListByPid'
+		action: 'product/commentList'
 	});
 	var indexSelf;
 	var V = B.View.extend({
@@ -35,6 +35,7 @@ define('', '', function(require) {
 		render: function() {
 			var t = this,
 				data = t.model.toJSON();
+            console.log(data);
 			var html = _.template(t.template, data);
 			t.$el.show().html(html);
 			t.bindEvent();
@@ -50,8 +51,8 @@ define('', '', function(require) {
 		syncRender: function() {
 			var t = this,
 				data = t.model.toJSON();
-			t.totalPage = Math.ceil(data.page.totalSize / t.totalSize);
-			t.$el.find(".js-comment-totalSize").text(data.page.totalSize);
+//			t.totalPage = Math.ceil(data.page.totalSize / t.totalSize);
+//			t.$el.find(".js-comment-totalSize").text(data.page.totalSize);
 			t.isLoad = false;
 			var _html = _.template(list_tpl, data);
 			t.$el.find(".js-comment-list").append(_html);
@@ -79,17 +80,13 @@ define('', '', function(require) {
 				comment_id:被评论的评论id(直接评论则是0)
 				方法：post
 				 */
-				var url = ST.PATH.ACTION + "comment/commentAdd";
+				var url = ST.PATH.ACTION + "product/addComment?timestamp=1437323557043&version=1.0&client=H5";
 				var _data = {};
 				_data.content = $.trim(t.$el.find(".js-comment-content").val());
-				_data.pid = t.model.get("pars")["pid"];
-				_data.user_id = Jser.getItem("user_id");
-				_data.uname = Jser.getItem("uname");
-				_data.comment_user_id = 0;
-				_data.comment_uname = 0;
-				_data.comment_id = 0;
+				_data.id = t.model.get("pars")["id"];
+                console.log(_data);
 				Jser.getJSON(url, _data, function(data) {
-					if (Number(data.code) == 0) {
+					if (Number(data.errorcode) == 0) {
 						location.reload();
 					}
 				}, function(data) {
@@ -166,7 +163,7 @@ define('', '', function(require) {
 	return function(pars) {
 		model.set({
 			pars: {
-				"pid": pars.pid
+				"id": pars.pid
 			}
 		});
 		return new V({
